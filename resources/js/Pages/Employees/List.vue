@@ -1,6 +1,7 @@
 <script setup>
     import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
     import CreateModal from './Create.vue';
+    import DetailModal from './Detail.vue';
     import EditModal from './Edit.vue';
     import { Head } from '@inertiajs/vue3';
     import { Table } from 'ant-design-vue';
@@ -10,6 +11,7 @@
 
     const handleModalClose = () => {
         editModalVisible.value = false;
+        detailModalVisible.value = false;
     };
 
     const columns = [
@@ -19,20 +21,21 @@
     },
     {
         title: 'Name',
-        dataIndex: 'name',
+        key: 'name',
+    },
+    {
+        title: 'Company'  ,
+        key: 'company_id',
     },
     {
         title: 'Email',
         dataIndex: 'email',
     },
     {
-        title: 'Logo',
-        dataIndex: 'logo',
+        title: 'Phone',
+        dataIndex: 'phone',
     },
-    {
-        title: 'Website',
-        key: 'website',
-    },
+
     {
         title: 'Action',
         key: 'action',
@@ -48,10 +51,9 @@ const pagination = ref({
 });
 
 const fetchData = async (params = {}) => {
-    
   loading.value = true;
   try {
-    const response = await axios.get('/api/companies', { params });
+    const response = await axios.get('/api/employees', { params });
     dataSource.value = response.data.data;
     pagination.value.total = response.data.total;
     pagination.value.current = response.data.current_page;
@@ -78,13 +80,20 @@ fetchData();
 
   // State for modal
   const editModalVisible = ref(false);
+  const detailModalVisible = ref(false);
   const selectedCompany = ref(null);
 
   // Method to open the edit modal
   const openEditModal = (company) => {
     selectedCompany.value = company
     editModalVisible.value = true;
-    console.log(editModalVisible.value)
+    // console.log(selectedCompany)
+  };
+
+  const openDetailModal = (company) => {
+    selectedCompany.value = company
+    detailModalVisible.value = true;
+    // console.log(selectedCompany)
   };
 
   const formattedWebsite = (website) => {
@@ -94,6 +103,16 @@ fetchData();
   return website;
 };
 
+const onDelete = key => {
+  axios.delete('/api/employees/'+key)
+            .then(response => {
+               fetchData()
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+            });
+          };
+
 </script>
     
     <template>
@@ -102,9 +121,10 @@ fetchData();
         <AuthenticatedLayout>
             <template #header>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Companies</h2>
-                <CreateModal @companyCreated="fetchData"/>
+                <CreateModal @employeeCreated="fetchData"/>
                 <EditModal :editModalVisible="editModalVisible" :company="selectedCompany" @handleModalClose="handleModalClose" @companyCreated="fetchData" />
-            </template>
+                <DetailModal :detailModalVisible="detailModalVisible" :company="selectedCompany" @handleModalClose="handleModalClose"/>
+              </template>
 
             <div class="py-12">
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -119,10 +139,20 @@ fetchData();
                         >
                         <template #bodyCell="{ column, record }">
                             <template v-if="column.key === 'action'">
-                                <a @click="openEditModal(record)">Edit</a>
+                                <a @click="openEditModal(record)" class="mr-2">Edit</a>
+                                <a-popconfirm
+                                v-if="dataSource.length"
+                                title="Are you Sure to delete?"
+                                @confirm="onDelete(record.id)"
+                              >
+                                <a class="text-rose-700	">Delete</a>
+                              </a-popconfirm>
                             </template>
-                            <template v-if="column.key === 'website'">
-                                <a :href="formattedWebsite(record.website)" target="_blank">Website</a>
+                            <template v-if="column.key === 'name'">
+                                {{record.first_name}} {{record.last_name}}
+                            </template>
+                            <template v-if="column.key === 'company_id'">
+                              <a @click="openDetailModal(record)">{{record.company.name}} </a>
                             </template>
                         </template>
                         </a-table>

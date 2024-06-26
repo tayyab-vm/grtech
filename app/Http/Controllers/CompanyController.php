@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCompanyRequest;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +15,11 @@ class CompanyController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render('Companies/List');    
+        $companies = new Company;
+        if($request->has('search') AND !empty($request->search)){
+            $companies = $companies->where('name','like','%'.$request->search.'%');
+        }
+        return $companies->orderBy('id','desc')->paginate(10);
     }
 
     /**
@@ -21,15 +27,25 @@ class CompanyController extends Controller
      */
     public function users()
     {
-        return User::paginate(1);
+        return Company::orderBy('id','desc')->paginate(10);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCompanyRequest $request)
     {
-        //
+        Company::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'website' => $request->website,
+            'logo' => $request->website
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Company created successfully',
+        ]);
     }
 
     /**
@@ -51,9 +67,19 @@ class CompanyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Company $company)
     {
-        //
+        $company->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'website' => $request->website,
+            'logo' => $request->website
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Company created successfully',
+        ]);
     }
 
     /**

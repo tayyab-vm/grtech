@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Company;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,9 +27,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    Route::resource('/companies', CompanyController::class);
-    Route::get('/users', [CompanyController::class, 'users']);
-
+    Route::get('/companies', function () { return Inertia::render('Companies/List'); })->name('companies');
+    Route::get('/employees', function () { return Inertia::render('Employees/List')->with(['companies' => Company::pluck('name','id')]); })->name('employees');
 });
+
 
 require __DIR__.'/auth.php';

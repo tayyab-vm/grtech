@@ -1,8 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-
 import { reactive, ref, toRaw } from 'vue';
+
+const emit = defineEmits(['companyCreated']);
 const formRef = ref();
 const visible = ref(false);
 const formState = reactive({
@@ -20,6 +21,7 @@ const onOk = () => {
                     console.log('Response from API:', response.data);
                     visible.value = false;
                     formRef.value.resetFields();
+                    emit('companyCreated');
                 })
                 .catch(error => {
                     console.error('Error submitting form:', error);

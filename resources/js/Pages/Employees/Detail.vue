@@ -1,5 +1,5 @@
 <script setup>
-    const props = defineProps(['editModalVisible','company'])
+    const props = defineProps(['detailModalVisible','company'])
 
     import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
     import { Head } from '@inertiajs/vue3';
@@ -9,26 +9,24 @@
     const emit = defineEmits(['handleModalClose','companyCreated']);
 
     const formRef = ref();
-    const visible = ref(props.editModalVisible);
+    const visible = ref(props.detailModalVisible);
     const company = ref(props.company);
 
     const formState = reactive({
-        name: '',
-        email: '',
-        website: '',
-        modifier: 'public',
-    });
+    companyName: '',
+    companyEmail: '',
+    companyWebsite: '',
+});
 
-    watch(() => props.editModalVisible, (newValue) => {
+    watch(() => props.detailModalVisible, (newValue) => {
         visible.value = newValue
         console.log(newValue)
     });
 
     watch(() => props.company, (newValue) => {
-        formState.id = newValue.id;
-        formState.name = newValue.name;
-        formState.email = newValue.email;
-        formState.website = newValue.website;      
+        formState.companyName = newValue.company.name;   
+        formState.companyEmail = newValue.company.email;   
+        formState.companyWebsite = newValue.company.website;   
     });
 
 
@@ -65,38 +63,23 @@
         
         <a-modal
         v-model:open="visible"
-        title="Edit comapny"
-        ok-text="Update"
-        cancel-text="Cancel"
+        title="Company Details"
+        cancel-text="Ok"
         @ok="onOk"
       @cancel="closeModal"
         >
-        <a-form ref="formRef" :model="formState" layout="vertical" name="form_in_modal">
-            <a-form-item
-            name="name"
-            label="Name"
-            :rules="[{ required: true, message: 'Please input the title of collection!' }]"
-            >
-            <a-input v-model:value="formState.name" />
-        </a-form-item>
-        
-        <a-form-item
-        name="email"
-        label="Email"
-        :rules="[{ required: true, message: 'Please input the title of collection!' }]"
-        >
-        <a-input v-model:value="formState.email" />
-    </a-form-item>
-    
-    <a-form-item
-    name="website"
-    label="Website"
-    :rules="[{ required: true, message: 'Please input the title of collection!' }]"
-    >
-    <a-input v-model:value="formState.website" />
-</a-form-item>
-
-</a-form>
+        <template #footer>
+            <a-button key="back" @click="closeModal">Close</a-button>
+          </template>
+            <a-descriptions title="">
+              <a-descriptions-item label="Name">{{formState.companyName}}</a-descriptions-item>
+            </a-descriptions>
+            <a-descriptions title="">
+                <a-descriptions-item label="Email">{{formState.companyEmail}}</a-descriptions-item>
+              </a-descriptions>
+              <a-descriptions title="">
+                <a-descriptions-item label="Website">{{formState.companyWebsite}}</a-descriptions-item>
+              </a-descriptions>
 
 </a-modal>
 </div>
