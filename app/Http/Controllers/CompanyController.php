@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
+use App\Http\Resources\CompanyCollection;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 class CompanyController extends Controller
@@ -15,19 +18,11 @@ class CompanyController extends Controller
      */
     public function index(Request $request)
     {
-        $companies = new Company;
+        $companies = Company::orderBy('id','desc');
         if($request->has('search') AND !empty($request->search)){
             $companies = $companies->where('name','like','%'.$request->search.'%');
         }
-        return $companies->orderBy('id','desc')->paginate(10);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function users()
-    {
-        return Company::orderBy('id','desc')->paginate(10);
+        return new CompanyCollection($companies->paginate(10));
     }
 
     /**
@@ -35,58 +30,49 @@ class CompanyController extends Controller
      */
     public function store(StoreCompanyRequest $request)
     {
+
+        $logo = Storage::disk('public')->put('',$request->file);
         Company::create([
             'name' => $request->name,
             'email' => $request->email,
             'website' => $request->website,
-            'logo' => $request->website
+            'logo' => $logo
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Company created successfully',
-        ]);
-    }
+        return response()->json(['status'=>'success','message'=>'Company created successfullly']);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Company $company)
+    public function update(UpdateCompanyRequest $request, Company $company)
     {
+        $logo = $company->logo;
+        if($request->has('file') AND !empty($request->file) AND $request->file != 'undefined'){
+            if (Storage::disk('public')->exists($logo)) {
+                Storage::disk('public')->delete($company->logo);
+            }
+            $logo = Storage::disk('public')->put('',$request->file);
+        }
+
         $company->update([
             'name' => $request->name,
             'email' => $request->email,
             'website' => $request->website,
-            'logo' => $request->website
+            'logo' => $logo
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Company created successfully',
-        ]);
+        return response()->json(['status'=>'success','message'=>'Company updated successfullly']);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Company $company)
     {
-        //
+        $company->employees()->delete();
+        $company->delete();
+        return response()->json(['status'=>'success','message'=>'Company deleted successfullly']);
     }
 }

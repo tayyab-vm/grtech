@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
+use App\Http\Resources\EmployeeCollection;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 
@@ -12,25 +15,17 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $employees = Employee::with('company');
+        $employees = Employee::orderBy('id','desc')->with('company');
         if($request->has('search') AND !empty($request->search)){
             $employees = $employees->where('name','like','%'.$request->search.'%');
         }
-        return $employees->orderBy('id','desc')->paginate(10);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return new EmployeeCollection($employees->paginate(10));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreEmployeeRequest $request)
     {
         Employee::create([
             'first_name' => $request->first_name,
@@ -39,28 +34,14 @@ class EmployeeController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
         ]);
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        return response()->json(['status'=>'success','message'=>'Employee created successfullly']);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Employee $employee)
+    public function update(UpdateEmployeeRequest $request, Employee $employee)
     {
         $employee->update([
             'first_name' => $request->first_name,
@@ -69,6 +50,9 @@ class EmployeeController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
         ]);
+
+        return response()->json(['status'=>'success','message'=>'Employee updated successfullly']);
+
     }
 
     /**
@@ -77,5 +61,6 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         $employee->delete();
+        return response()->json(['status'=>'success','message'=>'Employee deleted successfullly']);
     }
 }

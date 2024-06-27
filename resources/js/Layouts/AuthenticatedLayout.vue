@@ -1,13 +1,20 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, provide } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import { message } from 'ant-design-vue';
 
 const showingNavigationDropdown = ref(false);
+const info = (toastType,value) => {
+  message[toastType](value);
+};
+
+provide('info', info);
+
 </script>
 
 <template>
@@ -33,12 +40,12 @@ const showingNavigationDropdown = ref(false);
                                     Dashboard
                                 </NavLink>
                             </div>
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" v-if="$page.props.auth.user.type == 'admin'">
                                 <NavLink :href="route('companies')" :active="route().current('companies')">
                                     Companies
                                 </NavLink>
                             </div>
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" v-if="$page.props.auth.user.type == 'admin'">
                                 <NavLink :href="route('employees')" :active="route().current('employees')">
                                     Employees
                                 </NavLink>

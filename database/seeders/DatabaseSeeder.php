@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@grtech.com',
             'password' => 'password',
+            'type' => 'admin',
             ]
         );
 
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'User',
             'email' => 'user@grtech.com',
             'password' => 'password',
+            'type' => 'user',
             ]
         );
     }

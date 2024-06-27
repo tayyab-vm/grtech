@@ -4,10 +4,11 @@
     import EditModal from './Edit.vue';
     import { Head } from '@inertiajs/vue3';
     import { Table } from 'ant-design-vue';
-    import { ref, computed } from 'vue';
+    import { ref, computed, inject } from 'vue';
     import { usePagination } from 'vue-request';
     import axios from 'axios';
 
+    const info = inject("info");
     const handleModalClose = () => {
         editModalVisible.value = false;
     };
@@ -27,7 +28,7 @@
     },
     {
         title: 'Logo',
-        dataIndex: 'logo',
+        key: 'logo',
     },
     {
         title: 'Website',
@@ -51,7 +52,7 @@ const fetchData = async (params = {}) => {
     
   loading.value = true;
   try {
-    const response = await axios.get('/api/companies', { params });
+    const response = await axios.get('/companies', { params });
     dataSource.value = response.data.data;
     pagination.value.total = response.data.total;
     pagination.value.current = response.data.current_page;
@@ -84,7 +85,6 @@ fetchData();
   const openEditModal = (company) => {
     selectedCompany.value = company
     editModalVisible.value = true;
-    console.log(editModalVisible.value)
   };
 
   const formattedWebsite = (website) => {
@@ -93,6 +93,17 @@ fetchData();
   }
   return website;
 };
+
+const onDelete = key => {
+  axios.delete('/companies/'+key)
+            .then(response => {
+               fetchData()
+               info('success',response.data.message);
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+            });
+          };
 
 </script>
     
@@ -119,11 +130,25 @@ fetchData();
                         >
                         <template #bodyCell="{ column, record }">
                             <template v-if="column.key === 'action'">
-                                <a @click="openEditModal(record)">Edit</a>
+                                <a @click="openEditModal(record)" class="mr-2 text-blue-500">Edit</a>
+                                <a-popconfirm
+                                v-if="dataSource.length"
+                                title="Are you Sure to delete?"
+                                @confirm="onDelete(record.id)"
+                              >
+                                <a class="text-rose-700	">Delete</a>
+                              </a-popconfirm>
                             </template>
                             <template v-if="column.key === 'website'">
-                                <a :href="formattedWebsite(record.website)" target="_blank">Website</a>
+                                <a :href="formattedWebsite(record.website)" target="_blank" class="text-blue-500">{{record.website}}</a>
                             </template>
+                            <template v-if="column.key === 'logo'">
+                                <a-image
+                                    :width="50"
+                                    :src="`/storage/${record.logo}`"
+                                />                         
+                            </template>
+                         
                         </template>
                         </a-table>
                     </div>
